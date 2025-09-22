@@ -13,6 +13,7 @@ const chartColors = [
 document.addEventListener('DOMContentLoaded', async () => {
     showLoading();
     await fetchFootballData();
+    getLeagueCount();
     setupTabs();
     setupFilters();
     updateDashboard();
@@ -38,6 +39,11 @@ async function fetchFootballData() {
         footballData = data;
         filteredData = [...footballData];
     }
+}
+
+function getLeagueCount() {
+    const leagues = new Set(footballData.map(m => m.country).filter(Boolean));
+    document.getElementById('leagueCount').textContent = leagues.size;
 }
 
 // Tab Navigation

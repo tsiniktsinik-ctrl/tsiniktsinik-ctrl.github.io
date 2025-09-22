@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TnK Football Statistical Analysis Pro - Match Forecasts & Predictions</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="container">
+                <div class="header-content">
+                    <h1 class="app-title">⚽ TnK Football Statistical Analysis Pro</h1>
+                    <p class="app-subtitle">Advanced statistical forecasts from 13 leagues accross the globe</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs">
+            <div class="container">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+                    <button class="tab-btn" data-tab="forecasts">Match Forecasts</button>
+                    <button class="tab-btn" data-tab="results">Historical Results</button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="container">
+                <!-- Dashboard Tab -->
+                <div class="tab-content active" id="dashboard">
+                    <div class="dashboard-grid">
+                        <!-- Stats Cards -->
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-value" id="totalMatches">0</div>
+                                <div class="stat-label">Total Analysis</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="accuracy">0%</div>
+                                <div class="stat-label"><span id="accuracyLabel"></span> Global Accuracy</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="bestLeague">-</div>
+                                <div class="stat-label">Top Combo League</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="upcomingMatches">0</div>
+                                <div class="stat-label">Upcoming Forecasts</div>
+                            </div>
+                        </div>
+
+                        <!-- Charts Section -->
+                        <div class="charts-section">
+                            <div class="chart-container" style="position: relative; height: 300px;">
+                                <h3>Team Win Accuracy by League</h3>
+                                <canvas id="leagueChart"></canvas>
+                            </div>
+                            <div class="chart-container" style="position: relative; height: 300px;">
+                                <h3>Goals Accuracy by League</h3>
+                                <canvas id="leagueGoalsChart"></canvas>
+                            </div>
+                            <div class="chart-container" style="position: relative; height: 300px;">
+                                <h3>Forecast Accuracy</h3>
+                                <canvas id="forecastTypeAccuracyChart"></canvas>
+                            </div>
+                            <div class="chart-container" style="position: relative; height: 300px;">
+                                <h3>Goal Predictions vs Actual Results</h3>
+                                <canvas id="goalsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Forecasts Tab -->
+                <div class="tab-content" id="forecasts">
+                    <div class="filters-section">
+                        <div class="filter-group">
+                            <label class="form-label">Country</label>
+                            <select class="form-control" id="countryFilter">
+                                <option value="">All Countries</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="form-label">Prediction Type</label>
+                            <select class="form-control" id="forecastTypeFilter">
+                                <option value="">All Predictions</option>
+                                <option value="forecast">Result Forecasts</option>
+                                <option value="goals">Goals Forecasts</option>
+                                <option value="combo">Combos</option>
+                                <option value="only-forecast">Only Result Forecasts</option>
+                                <option value="only-goals">Only Goals Forecasts</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="form-label">Search Teams</label>
+                            <input type="text" class="form-control" id="teamSearch" placeholder="Search team names...">
+                        </div>
+                    </div>
+                    <div class="matches-grid" id="forecastsGrid">
+                        <!-- Statistical forecast cards will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Results Tab -->
+                <div class="tab-content" id="results">
+                    <div class="filters-section">
+                        <div class="filter-group">
+                            <label class="form-label">Country</label>
+                            <select class="form-control" id="countryHistoricalFilter">
+                                <option value="">All Countries</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="form-label">Week</label>
+                            <select class="form-control" id="weekFilter">
+                                <option value="">All Weeks</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="form-label">Correct/Incorrect</label>
+                            <select class="form-control" id="resultTypeFilter">
+                                <option value="">All Results</option>
+                                <option value="correct-forecasts">Accurate Forecasts</option>
+                                <option value="incorrect-forecasts">Inaccurate Forecasts</option>
+                                <option value="correct-goals">Accurate Goals</option>
+                                <option value="incorrect-goals">Inaccurate Goals</option>
+                                <option value="correct-combos">Accurate Combos</option>
+                                <option value="incorrect-combos">Inaccurate Combos</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="matches-grid" id="resultsGrid">
+                        <!-- Historical result cards will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-spinner"></div>
+            <p>Loading statistical data...</p>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

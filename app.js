@@ -199,11 +199,11 @@ function setText(id, text) {
 
 // Forecasts & Results Rendering
 function renderForecasts() {
-    renderMatches('forecastsGrid', filteredData.filter(m => !isMatchCompleted(m)), false, 'No upcoming match forecasts found with current filters.');
+    renderMatches('forecastsGrid', filteredData.filter(m => !isMatchCompleted(m)).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()), false, 'No upcoming match forecasts found with current filters.');
 }
 
 function renderResults() {
-    renderMatches('resultsGrid', filteredData.filter(isMatchCompleted), true, 'No completed statistical analyses found with current filters.');
+    renderMatches('resultsGrid', filteredData.filter(isMatchCompleted).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()), true, 'No completed statistical analyses found with current filters.');
 }
 
 function renderMatches(containerId, matches, showResult, emptyMsg) {
@@ -234,6 +234,11 @@ function createMatchCard(match, showResult = false) {
                     <div class="team-name home">${match.home}</div>
                     <div class="vs-separator">VS</div>
                     <div class="team-name away">${match.away}</div>
+                </div>
+                <div class="team-matchup">
+                    <div class="team-name home"></div>
+                    <div class="vs-separator">${match.date}</div>
+                    <div class="team-name away"></div>
                 </div>
             </div>
             <div class="match-predictions">

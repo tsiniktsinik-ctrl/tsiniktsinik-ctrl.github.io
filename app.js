@@ -165,14 +165,9 @@ function updateDashboard() {
     setText('bestLeague', bestLeague);
     setText('upcomingMatches', upcoming.length);
 
-    // setTimeout(() => {
-    //     createLeagueChart();
-    //     createLeagueGoalsChart();
-    //     createCountryChart();
     [createLeagueChart, createLeagueGoalsChart, createForecastTypeAccuracyChart, createTimelineChart, createProbabilityChart, createGoalsChart, createWeeklyChart].forEach((fn, i) =>
         setTimeout(() => { try { fn(); } catch (e) { console.error(e); } }, i * 100)
     );
-    // }, 200);
 }
 
 function calcAccuracy(matches, checkFn) {
@@ -252,9 +247,9 @@ function createMatchCard(match, showResult = false) {
                 <div class="goals-prediction">
                     <span class="goals-label">Suggested:</span>
                     <span class="goals-value">
-                        ${isGoalsCorrect !== undefined ? match.result_suggestion : ''}
-                        ${isBothCorrect !== undefined ? ' - ' : ''}
-                        ${isGoalsCorrect !== undefined ? match.goals_suggestion : ''}
+                        ${match.result_suggestion}
+                        ${match.result_suggestion !== '' && match.goals_suggestion !== '' ? ' - ' : ''}
+                        ${match.goals_suggestion}
                     </span>
                 </div>
             </div>
@@ -282,7 +277,6 @@ function renderMatchResult(match, isForecastCorrect, isGoalsCorrect, isBothCorre
                 <span class="actual-score">${match.home_score} - ${match.away_score}</span>
             </div>
             <div class="prediction-accuracy">
-                ${showCorrectIncorrect(isBothCorrect, "Combo")}
                 ${showCorrectIncorrect(isForecastCorrect, "Forecast")}
                 ${showCorrectIncorrect(isGoalsCorrect, "Goals")}
             </div>

@@ -8,7 +8,7 @@
 // ============================================================================
 
 const CONFIG = {
-    API_ENDPOINT: 'https://ueo2mocbr1.execute-api.eu-central-1.amazonaws.com/',
+    API_ENDPOINT: `https://ueo2mocbr1.execute-api.eu-central-1.amazonaws.com/${window.location.search}`,
     STORAGE_KEYS: {
         FILTER_PRESETS: 'football_filter_presets',
         CURRENT_FILTERS: 'football_current_filters'
@@ -59,8 +59,13 @@ const Utils = {
      * @returns {Date} Parsed date
      */
     parseDate(matchId) {
-        let date = matchId.split('-')[1].split("/");
-        return new Date(date[2],date[1],date[0]);
+        if(window.location.search.includes['odds']){
+            let date = matchId.split('-')[1].split("/");
+            return new Date(date[2],date[1]-1,date[0]);
+        } else {
+            let dateSplit = matchId.split('-')
+            return new Date(dateSplit[dateSplit.length-5],dateSplit[dateSplit.length-4]-1,dateSplit[dateSplit.length-3])
+        }
     },
 
     /**
@@ -390,7 +395,7 @@ class FilterManager {
             if (this.currentFilters.dateFrom) {
                 const matchDate = Utils.parseDate(matchInfo.MatchId);
                 let date = this.currentFilters.dateFrom.split('-')
-                const fromDate = new Date(date[0],date[1],date[2]);
+                const fromDate = new Date(date[0],date[1]-1,date[2]);
                 if (matchDate < fromDate) {
                     return false;
                 }
@@ -399,7 +404,7 @@ class FilterManager {
             if (this.currentFilters.dateTo) {
                 const matchDate = Utils.parseDate(matchInfo.MatchId);
                 let date = this.currentFilters.dateTo.split('-')
-                const toDate = new Date(date[0],date[1],date[2]);
+                const toDate = new Date(date[0],date[1]-1,date[2]);
                 if (matchDate > toDate) {
                     return false;
                 }
@@ -511,7 +516,7 @@ class FilterManager {
 }
 
 function getMatchSuggestionsForModel(match, model){
-    const divId = match['match-info']['MatchId'].split('-')[0]
+    const divId = match['match-info']['MatchId'].split('-')[window.location.search.includes['odds']?0:1]
     const div = match['match-info']['Div']
     const modelPredictions = match['model-predictions'][model];
     const home = modelPredictions['1'];

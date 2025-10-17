@@ -59,7 +59,7 @@ const Utils = {
      * @returns {Date} Parsed date
      */
     parseDate(matchId) {
-        if(window.location.search.includes['odds']){
+        if(window.location.search.includes('odds')){
             let date = matchId.split('-')[1].split("/");
             return new Date(date[2],date[1]-1,date[0]);
         } else {

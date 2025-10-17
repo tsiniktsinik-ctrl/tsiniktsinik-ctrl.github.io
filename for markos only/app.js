@@ -516,7 +516,7 @@ class FilterManager {
 }
 
 function getMatchSuggestionsForModel(match, model){
-    const divId = match['match-info']['MatchId'].split('-')[window.location.search.includes['odds']?0:1]
+    const divId = match['match-info']['MatchId'].split('-')[window.location.search.includes('odds')?0:1]
     const div = match['match-info']['Div']
     const modelPredictions = match['model-predictions'][model];
     const home = modelPredictions['1'];

@@ -342,7 +342,6 @@ function jsonToTable(data) {
     for(idx in data[columns[0]]){
         html += `<tr class="suggestion ${data["result"][idx]!=undefined?(data["result"][idx]?'success':'failed'):""}">`;
         for (const key of columns){
-            console.log(key)
             if(key=="result")
                 continue
             html += `<td style="border: 1px solid #ddd; padding: 4px;">${data[key][idx]}</td>`;
@@ -379,6 +378,12 @@ class FilterManager {
             
             // Search filter
             if (this.currentFilters.search) {
+                if(this.currentFilters.search.includes("q:"))
+                    try{
+                        return this.applyAdvancedFilters(match['model-predictions'],this.currentFilters.search.split("q:")[1])
+                    } catch (e){
+                        return true;
+                    }
                 const searchTerm = this.currentFilters.search.toLowerCase();
                 const searchText = `${matchInfo.Home} ${matchInfo.Away} ${matchInfo.Div}`.toLowerCase();
                 if (!searchText.includes(searchTerm)) {
@@ -414,6 +419,10 @@ class FilterManager {
         });
     }
 
+    applyAdvancedFilters(models, query){
+        return eval(query)
+    }
+
     /**
      * Update filters from form inputs
      */
@@ -447,71 +456,175 @@ class FilterManager {
         if (dateToInput) dateToInput.value = '';
     }
 
-    /**
-     * Save filter preset
-     * @param {string} name - Preset name
-     */
-    savePreset(name) {
-        const presets = this.getPresets();
-        presets[name] = { ...this.currentFilters };
-        localStorage.setItem(CONFIG.STORAGE_KEYS.FILTER_PRESETS, JSON.stringify(presets));
-    }
-
-    /**
-     * Load filter preset
-     * @param {string} name - Preset name
-     */
-    loadPreset(name) {
-        const presets = this.getPresets();
-        if (presets[name]) {
-            this.currentFilters = { ...presets[name] };
-            this.updateFormFromFilters();
-        }
-    }
-
-    /**
-     * Get all saved presets
-     * @returns {Object} Presets object
-     */
-    getPresets() {
-        try {
-            return JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.FILTER_PRESETS) || '{}');
-        } catch {
-            return {};
-        }
-    }
-
-    /**
-     * Delete preset
-     * @param {string} name - Preset name
-     */
-    deletePreset(name) {
-        const presets = this.getPresets();
-        delete presets[name];
-        localStorage.setItem(CONFIG.STORAGE_KEYS.FILTER_PRESETS, JSON.stringify(presets));
-    }
-
-    /**
-     * Update form inputs from current filters
-     */
-    updateFormFromFilters() {
-        const searchInput = DOMUtils.getElementById('search-input');
-        const divisionFilter = DOMUtils.getElementById('division-filter');
-        const dateFromInput = DOMUtils.getElementById('date-from');
-        const dateToInput = DOMUtils.getElementById('date-to');
-
-        if (searchInput) searchInput.value = this.currentFilters.search;
-        if (divisionFilter) divisionFilter.value = this.currentFilters.division;
-        if (dateFromInput) dateFromInput.value = this.currentFilters.dateFrom;
-        if (dateToInput) dateToInput.value = this.currentFilters.dateTo;
-    }
-
     hideFilters() {
             DOMUtils.getElementById('filters').classList.add('hidden');
     }
 
     showFilters() {
             DOMUtils.getElementById('filters').classList.remove('hidden');
+    }
+}
+
+class FilterPresetManager {
+    constructor(appManager, filterManager){
+        this.filterManager = filterManager
+        this.appManager = appManager
+    }
+    static STORAGE_KEY = 'football_filter_presets';
+
+    static getAll() {
+        try {
+            return Object.assign(FilterPresetManager.getDefaultPresets(),FilterPresetManager.loadFromStorage());
+        } catch {
+            return {};
+        }
+    }
+
+    static loadFromStorage() {
+        let values = JSON.parse(localStorage.getItem(FilterPresetManager.STORAGE_KEY))
+        return values ? values : {}
+    }
+
+    static getDefaultPresets(){
+        return {
+            "A model expects dominant performance - From Goals" : {
+                'search':'q:Object.values(models).some(model=>(model.H > 2 && model.A < 1) || (model.A > 2 && model.H < 1))',
+                'division': 'all',
+                'dateFrom' : '',
+                'dateTo' : ''
+            },
+            "A model expects dominant performance - From Win Prob" : {
+                'search':'q:Object.values(models).some(model=>model["1"] > 0.8 || model["2"] > 0.8)',
+                'division': 'all',
+                'dateFrom' : '',
+                'dateTo' : ''
+            },
+            "All models aggree on BTTS (Y)" : {
+                'search': 'q:Object.values(models).every(model=>model.H > 1.3 && model.A > 1.3)',
+                'division': 'all',
+                'dateFrom' : '',
+                'dateTo' : ''
+            },
+            "Is this Football or Fusball?" : {
+                'search': 'q:Object.values(models).every(model=>model.H + model.A > 3.5)',
+                'division': 'all',
+                'dateFrom' : '',
+                'dateTo' : ''
+            },
+            "Goals in total agreement" : {
+                'search': 'q:Object.values(models).every(model => Math.round(model.H) == Math.round(models[0].H) && Math.round(model.A) == Math.round(models[0].A))',
+                'division': 'all',
+                'dateFrom' : '',
+                'dateTo' : ''
+            },
+            "High Draw Probability" : {
+                "search": "q:Object.values(models).some(model=>model.X > 0.7)",
+                'division': 'all',
+                'dateFrom' : '',
+                'dateTo' : ''
+            },
+            "All models Win Probability in agreement" : {
+                'search': 'q: Object.values(models).every(model => model["1"] > 0.6499) || Object.values(models).every(model => model["X"] > 0.6499) || Object.values(models).every(model => model["2"] > 0.6499)',
+                'division': 'all',
+                'dateFrom' : '',
+                'dateTo' : ''
+            }
+        }
+    }
+
+    static save(name, filters) {
+        const presets = FilterPresetManager.getAll();
+        presets[name] = { ...filters };
+        localStorage.setItem(FilterPresetManager.STORAGE_KEY, JSON.stringify(presets));
+    }
+
+    static load(name) {
+        const presets = FilterPresetManager.getAll();
+        return presets[name] || null;
+    }
+
+    static delete(name) {
+        const presets = FilterPresetManager.getAll();
+        delete presets[name];
+        localStorage.setItem(FilterPresetManager.STORAGE_KEY, JSON.stringify(presets));
+    }
+
+    static getNames() {
+        return Object.keys(FilterPresetManager.getAll()).sort();
+    }
+
+    updateFormFromFilters() {
+        const searchInput = DOMUtils.getElementById('search-input');
+        const divisionFilter = DOMUtils.getElementById('division-filter');
+        const dateFromInput = DOMUtils.getElementById('date-from');
+        const dateToInput = DOMUtils.getElementById('date-to');
+
+        if (searchInput) searchInput.value = this.filterManager.currentFilters.search;
+        if (divisionFilter) divisionFilter.value = this.filterManager.currentFilters.division;
+        if (dateFromInput) dateFromInput.value = this.filterManager.currentFilters.dateFrom;
+        if (dateToInput) dateToInput.value = this.filterManager.currentFilters.dateTo;
+    }
+
+    setupPresetEventListeners() {
+        const openModalBtn = document.getElementById('save-preset');
+        const saveModal = document.getElementById('save-preset-modal');
+        const confirmBtn = document.getElementById('confirm-save-preset');
+        const closeBtn = document.getElementById('close-save-preset');
+        const presetInput = document.getElementById('preset-name');
+        const presetSelect = document.getElementById('preset-select');
+        const deletePresetBtn = document.getElementById('delete-preset');
+
+        openModalBtn.addEventListener('click', () => {
+            saveModal.classList.remove('hidden');
+            presetInput.value = document.getElementById('preset-select').value;
+            presetInput.focus();
+        });
+
+        closeBtn.addEventListener('click', () => {
+            saveModal.classList.add('hidden');
+        });
+
+        confirmBtn.addEventListener('click', () => {
+            const name = presetInput.value.trim();
+            if (name) {
+                FilterPresetManager.save(name, this.filterManager.currentFilters);
+                saveModal.classList.add('hidden');
+                this.updatePresetList(name);
+            }
+        });
+
+        presetSelect.addEventListener('change', () => {
+            const selected = presetSelect.value;
+            if (selected) {
+                const loaded = FilterPresetManager.load(selected);
+                if (loaded) {
+                    this.filterManager.currentFilters = loaded;
+                    this.updateFormFromFilters()
+                    this.appManager.applyFilters()
+                }
+            }
+        });
+
+        deletePresetBtn.addEventListener('click', () => {
+            const selected = presetSelect.value;
+            if (selected) {
+                FilterPresetManager.delete(selected);
+                this.updatePresetList();
+            }
+        });
+    }
+
+    updatePresetList(selected) {
+        const presetSelect = document.getElementById('preset-select');
+        presetSelect.innerHTML = `<option value="">Select Preset</option>`;
+        FilterPresetManager.getNames().forEach(name => {
+            const opt = document.createElement('option');
+            opt.value = name;
+            opt.textContent = name;
+            presetSelect.appendChild(opt);
+        });
+        if(selected)
+            presetSelect.value = selected
     }
 }
 
@@ -637,6 +750,7 @@ class FootballAnalyticsApp {
     constructor() {
         this.state = new AppState();
         this.filterManager = new FilterManager();
+        this.filterPresetManager = new FilterPresetManager(this, this.filterManager);
         this.dataManager = new DataManager();
         
         // Initialize charts manager
@@ -651,6 +765,8 @@ class FootballAnalyticsApp {
         await this.loadData();
         this.initializeCharts();
         this.setupFilters();
+        this.filterPresetManager.setupPresetEventListeners();
+        this.filterPresetManager.updatePresetList();
     }
 
     /**
@@ -729,7 +845,7 @@ class FootballAnalyticsApp {
      */
     setupFilters() {
         this.populateDivisionFilter();
-        this.loadPresets();
+        // this.loadPresets();
     }
 
     /**

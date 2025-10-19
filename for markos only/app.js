@@ -499,6 +499,17 @@ class FilterPresetManager {
                 'dateFrom' : '',
                 'dateTo' : ''
             },
+            "A model expects dominant performance - From Win Prob (any %)" : {
+                'search':`q:
+                    const allSameMax = obj => {
+                    const keys = ['1', 'X', '2'];
+                    return Object.values(obj).every(v => keys.reduce((a,b) => v[a] > v[b] ? a : b) === keys.reduce((a,b) => Object.values(obj)[0][a] > Object.values(obj)[0][b] ? a : b));
+                };
+                allSameMax(models)`,
+                'division': 'all',
+                'dateFrom' : '',
+                'dateTo' : ''
+            },
             "All models aggree on BTTS (Y)" : {
                 'search': 'q:Object.values(models).every(model=>model.H > 1.3 && model.A > 1.3)',
                 'division': 'all',
